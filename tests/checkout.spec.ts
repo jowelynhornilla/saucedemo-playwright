@@ -4,13 +4,6 @@ import { customers } from '../data/checkout';
 
 const productsUnderTest = [products.backpack, products.bikeLight] as const;
 
-/**
- * Task 5 — checkout.
- *
- * The required test stops at the Checkout Overview page, as specified. The
- * second test carries on to the confirmation screen, since an order that never
- * completes is not much of a checkout.
- */
 test.describe('Checkout', () => {
   test.beforeEach(async ({ loginAsStandardUser, cartPage }) => {
     await loginAsStandardUser.addProductsToCart(productsUnderTest);
@@ -53,7 +46,6 @@ test.describe('Checkout', () => {
 
     await checkoutCompletePage.expectOrderConfirmed();
 
-    // Placing the order empties the cart.
     await checkoutCompletePage.nav.expectCartItemCount(0);
   });
 

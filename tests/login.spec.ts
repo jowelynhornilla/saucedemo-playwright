@@ -1,13 +1,6 @@
 import { test, expect } from '../fixtures/pages.fixture';
 import { users } from '../data/users';
 
-/**
- * Task 1 — Login.
- *
- * The happy path is the assessment requirement; the negative cases are included
- * because "login works" is only half the story — an app that lets a locked-out
- * user in is just as broken as one that rejects a valid user.
- */
 test.describe('Login', () => {
   test('standard user can log in and the Products page loads', async ({
     loginPage,
@@ -23,11 +16,9 @@ test.describe('Login', () => {
     });
 
     await test.step('the Products page is displayed', async () => {
-      // Asserts the URL is /inventory.html and the header reads "Products".
       await inventoryPage.expectLoaded();
       await inventoryPage.expectProductsListed();
 
-      // A fresh session starts with an empty cart.
       await inventoryPage.nav.expectCartItemCount(0);
     });
   });
@@ -37,7 +28,6 @@ test.describe('Login', () => {
 
     await loginPage.expectErrorMessage('Sorry, this user has been locked out.');
 
-    // The user stays on the login page — no partial access to the app.
     await expect(page).toHaveURL(/saucedemo\.com\/$/);
   });
 

@@ -1,16 +1,8 @@
 import { test } from '../fixtures/pages.fixture';
 import { products } from '../data/products';
 
-/** The two products the assessment asks for, in the order they are added. */
 const productsUnderTest = [products.backpack, products.bikeLight] as const;
 
-/**
- * Tasks 2–4 — adding products, inspecting the cart and removing an item.
- *
- * `loginAsStandardUser` is requested as a fixture so each test starts on the
- * Products page with a signed-in session, and the body of the test contains
- * only the behaviour under test.
- */
 test.describe('Shopping cart', () => {
   test('adding two products updates the cart badge to 2', async ({ loginAsStandardUser }) => {
     const inventoryPage = loginAsStandardUser;
@@ -40,12 +32,9 @@ test.describe('Shopping cart', () => {
     await test.step('both products are present, with the right name and price', async () => {
       await cartPage.expectItemCount(2);
 
-      // Per-product assertions: each one is scoped to its own cart row, so a
-      // failure names the product that is wrong.
       await cartPage.expectProductInCart(products.backpack);
       await cartPage.expectProductInCart(products.bikeLight);
 
-      // And a whole-cart assertion: exactly these products, in this order.
       await cartPage.expectCartContains(productsUnderTest);
     });
   });
@@ -75,6 +64,22 @@ test.describe('Shopping cart', () => {
     });
   });
 
+  test('a product with punctuation in its name can be added and removed', async ({
+    loginAsStandardUser,
+    cartPage,
+  }) => {
+    const inventoryPage = loginAsStandardUser;
+
+    await inventoryPage.addToCart(products.redTShirt);
+    await inventoryPage.nav.expectCartItemCount(1);
+
+    await inventoryPage.nav.openCart();
+    await cartPage.expectProductInCart(products.redTShirt);
+
+    await cartPage.removeProduct(products.redTShirt);
+    await cartPage.expectItemCount(0);
+  });
+
   test('removing every product empties the cart and hides the badge', async ({
     loginAsStandardUser,
     cartPage,
@@ -90,7 +95,6 @@ test.describe('Shopping cart', () => {
 
     await cartPage.expectItemCount(0);
 
-    // SauceDemo removes the badge element entirely when the cart is empty.
     await cartPage.nav.expectCartItemCount(0);
   });
 });

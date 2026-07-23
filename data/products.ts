@@ -1,10 +1,3 @@
-/**
- * Catalogue data for the products the suite interacts with.
- *
- * Only the fields the tests actually assert on are modelled. Prices are stored
- * as strings exactly as the UI renders them, so assertions compare like for
- * like without formatting logic in the spec.
- */
 export interface Product {
   name: string;
   price: string;
@@ -21,6 +14,21 @@ export const products = {
   },
   boltTShirt: {
     name: 'Sauce Labs Bolt T-Shirt',
+    price: '$15.99',
+  },
+
+  fleeceJacket: {
+    name: 'Sauce Labs Fleece Jacket',
+    price: '$49.99',
+  },
+
+  onesie: {
+    name: 'Sauce Labs Onesie',
+    price: '$7.99',
+  },
+
+  redTShirt: {
+    name: 'Test.allTheThings() T-Shirt (Red)',
     price: '$15.99',
   },
 } as const satisfies Record<string, Product>;

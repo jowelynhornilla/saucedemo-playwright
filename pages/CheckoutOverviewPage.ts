@@ -3,9 +3,6 @@ import { BasePage } from './BasePage';
 import { parsePrice, sumPrices } from '../utils/helpers';
 import type { Product } from '../data/products';
 
-/**
- * Step two of checkout at `/checkout-step-two.html` — the order summary.
- */
 export class CheckoutOverviewPage extends BasePage {
   protected readonly path = '/checkout-step-two.html';
   protected readonly title = 'Checkout: Overview';
@@ -38,13 +35,6 @@ export class CheckoutOverviewPage extends BasePage {
     await expect(this.itemNames).toHaveText(expectedProducts.map((product) => product.name));
   }
 
-  /**
-   * Checks the money maths: the item subtotal is the sum of the line prices and
-   * the total is subtotal + tax.
-   *
-   * Worth asserting because a price bug is exactly the kind of defect a UI
-   * smoke test would otherwise walk straight past.
-   */
   async expectTotalsAreConsistent(expectedProducts: readonly Product[]): Promise<void> {
     const expectedSubtotal = sumPrices(expectedProducts.map((product) => product.price));
 

@@ -7,18 +7,6 @@ import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
 import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
 import { users } from '../data/users';
 
-/**
- * Custom fixtures.
- *
- * Two things happen here:
- *
- * 1. Every page object is exposed as a fixture, so a spec destructures only the
- *    pages it needs instead of `new`-ing them in a `beforeEach`.
- * 2. `loginAsStandardUser` performs the sign-in that most specs need as a
- *    precondition. Making it an explicit fixture (rather than a global setup)
- *    keeps the login test itself free to drive login by hand, and keeps every
- *    other test's precondition visible in its own signature.
- */
 type Pages = {
   loginPage: LoginPage;
   inventoryPage: InventoryPage;
@@ -29,7 +17,6 @@ type Pages = {
 };
 
 type Auth = {
-  /** Signs in as `standard_user` and leaves the browser on the Products page. */
   loginAsStandardUser: InventoryPage;
 };
 
@@ -62,7 +49,6 @@ export const test = base.extend<Pages & Auth>({
     await loginPage.gotoAndLogin(users.standard);
     await inventoryPage.expectLoaded();
 
-    // Hand the Products page to the test so it can start acting immediately.
     await use(inventoryPage);
   },
 });

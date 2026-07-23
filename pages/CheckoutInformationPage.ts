@@ -2,9 +2,6 @@ import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 import type { CustomerInfo } from '../data/checkout';
 
-/**
- * Step one of checkout at `/checkout-step-one.html` — the customer details form.
- */
 export class CheckoutInformationPage extends BasePage {
   protected readonly path = '/checkout-step-one.html';
   protected readonly title = 'Checkout: Your Information';
@@ -26,7 +23,6 @@ export class CheckoutInformationPage extends BasePage {
     this.errorMessage = page.locator('[data-test="error"]');
   }
 
-  /** Fills the form without submitting — useful for validation tests. */
   async fillCustomerInfo(customer: CustomerInfo): Promise<void> {
     await this.firstNameInput.fill(customer.firstName);
     await this.lastNameInput.fill(customer.lastName);
@@ -37,7 +33,6 @@ export class CheckoutInformationPage extends BasePage {
     await this.continueButton.click();
   }
 
-  /** Fills the form and submits it in one step — the common path. */
   async submitCustomerInfo(customer: CustomerInfo): Promise<void> {
     await this.fillCustomerInfo(customer);
     await this.continue();

@@ -2,7 +2,9 @@
 
 End-to-end tests for [saucedemo.com](https://www.saucedemo.com/), written with **Playwright** and **TypeScript** using the Page Object Model.
 
-30 tests (10 scenarios × Chromium / Firefox / WebKit), all passing.
+114 tests (19 scenarios × 6 device profiles), all passing.
+
+Six real defects found on the platform are documented in **[BUG-REPORT.md](BUG-REPORT.md)**, each backed by an automated test.
 
 ---
 
@@ -26,9 +28,10 @@ npm run report
 
 | Command                  | What it does                                            |
 | ------------------------ | ------------------------------------------------------- |
-| `npm test`               | Runs every test in Chromium, Firefox and WebKit          |
+| `npm test`               | Runs every test on all 6 device profiles                 |
 | `npm run test:chromium`  | Chromium only — the fastest feedback loop                |
-| `npm run test:headed`    | Runs with a visible browser window                       |
+| `npm run test:mobile`    | Mobile and tablet profiles only                          |
+| `npm run test:demo`      | Visible browser in slow motion — watch a run end to end  |
 | `npm run test:ui`        | Playwright UI mode — time-travel debugging, watch mode   |
 | `npm run test:debug`     | Steps through tests with the Playwright Inspector        |
 | `npm run report`         | Opens the generated HTML report                          |
@@ -62,8 +65,10 @@ BASE_URL=https://www.saucedemo.com npm test
 | **5** – Checkout, verify the Overview page loads          | `tests/checkout.spec.ts` → *customer details lead to the Checkout Overview page* |
 
 Beyond the brief, the suite also covers the locked-out and invalid-credential
-login paths, emptying the cart completely, checkout form validation, and the
-order confirmation screen.
+login paths, emptying the cart completely, checkout form validation, the order
+confirmation screen, and the one product whose name contains punctuation
+(`Test.allTheThings() T-Shirt (Red)`) — the case most likely to break selector
+generation.
 
 ### Bonus features included
 
@@ -73,9 +78,64 @@ order confirmation screen.
 - **Screenshots on failure**, **video on failure**, **traces on failure**
 - **HTML report** (plus `list` and JUnit XML for CI)
 - **Cross-browser**: Chromium, Firefox, WebKit
+- **Responsive coverage**: iPad, Pixel 5 and iPhone 13 profiles alongside desktop
+- **A defect report** ([BUG-REPORT.md](BUG-REPORT.md)) with six verified bugs, screenshots and a control group
 - **GitHub Actions workflow** (`.github/workflows/playwright.yml`)
 - **`test.step()`** grouping so the report reads like the test plan
 - Strict TypeScript throughout
+
+---
+
+## Defects found
+
+Testing the `problem_user` account surfaced **six genuine defects**, three of them Critical.
+They are written up in **[BUG-REPORT.md](BUG-REPORT.md)** with steps to reproduce, expected
+versus actual behaviour, severity, business impact and screenshot evidence.
+
+| ID | Defect | Severity |
+| --- | --- | --- |
+| BUG-001 | All six products render the same image | Medium |
+| BUG-002 | Add to cart is dead on three products | **Critical** |
+| BUG-003 | Items cannot be removed from the cart | **Critical** |
+| BUG-004 | Sort dropdown rejects any new selection | High |
+| BUG-005 | Last Name field writes into First Name | **Critical** |
+| BUG-006 | Cart badge over-counts after a dead Remove | Medium |
+
+```bash
+npm run test:defects
+```
+
+Two things make this more than a list of complaints:
+
+**Every defect has a test that asserts the correct behaviour**, marked `test.fail()`. The
+suite stays green while the bug exists, and the moment someone fixes it Playwright reports
+an unexpected pass — the signal to drop the annotation and let the test guard the fix as a
+normal regression test. The bug list maintains itself.
+
+**Every defect is checked against a control account in the same run.** The
+*Control — standard_user is unaffected* test runs all six checks against a healthy account
+and passes. That is what separates a real defect from a broken test, and it is automated
+rather than asserted.
+
+---
+
+## A note on API testing
+
+There are no API tests here, and that is deliberate rather than an omission. SauceDemo is a
+static front-end with no public API to exercise, so any API test in this repository would be
+testing something invented for the sake of it.
+
+On a platform that does have one, this is the approach I would take:
+
+- Playwright's `request` fixture for direct endpoint tests — status codes, schema, auth
+  rules, permissions and error paths — running as their own fast project, separate from the
+  UI suite.
+- **Seed state via API, assert via UI.** Creating a customer or quote through the API and
+  then verifying only the rendered result is dramatically faster and less brittle than
+  clicking through setup screens on every test.
+- `page.route()` to intercept and stub responses, so error states, empty states, slow
+  responses and timeouts can be tested deterministically instead of hoping to catch them.
+- A shared `APIRequestContext` with an auth token acquired once per worker.
 
 ---
 
@@ -102,9 +162,13 @@ saucedemo-playwright/
 ├── tests/                       # Specs — one file per user journey
 │   ├── login.spec.ts
 │   ├── cart.spec.ts
-│   └── checkout.spec.ts
+│   ├── checkout.spec.ts
+│   └── known-defects.spec.ts    #   real bugs, each asserted + `test.fail()`
 ├── utils/
 │   └── helpers.ts               # Pure helpers (slugify, price parsing)
+├── docs/
+│   └── bug-evidence/            # Screenshots referenced by the bug report
+├── BUG-REPORT.md                # Six verified defects, with severity + impact
 ├── playwright.config.ts
 ├── tsconfig.json
 └── package.json
@@ -148,7 +212,10 @@ login by hand, since that is the thing it is testing.
 **Deriving selectors from data.** SauceDemo's add/remove buttons are
 `data-test="add-to-cart-sauce-labs-backpack"`. `toProductId()` derives that slug
 from the product name, so covering a new product means adding three lines to
-`data/products.ts` — no new selectors, no new page-object methods.
+`data/products.ts` — no new selectors, no new page-object methods. The site
+lowercases the name and swaps spaces for dashes but *keeps* punctuation, so the
+helper does the same; the `Test.allTheThings() T-Shirt (Red)` test exists to
+hold that behaviour in place, since it is the only product that proves it.
 
 **Selector strategy.** `data-test` attributes first (they exist precisely to be
 tested against and survive restyling), stable structural classes such as

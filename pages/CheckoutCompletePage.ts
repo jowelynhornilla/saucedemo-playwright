@@ -2,9 +2,6 @@ import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
 import { HeaderComponent } from './components/HeaderComponent';
 
-/**
- * The order confirmation at `/checkout-complete.html`.
- */
 export class CheckoutCompletePage extends BasePage {
   protected readonly path = '/checkout-complete.html';
   protected readonly title = 'Checkout: Complete!';

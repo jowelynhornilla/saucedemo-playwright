@@ -7,8 +7,11 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
+    "test:demo": "SLOW_MO=600 playwright test --project=chromium --headed --workers=1 --retries=1",
     "test:debug": "playwright test --debug",
     "test:chromium": "playwright test --project=chromium",
+    "test:mobile": "playwright test --project=tablet-ipad --project=mobile-chrome --project=mobile-safari",
+    "test:defects": "playwright test tests/known-defects.spec.ts",
     "report": "playwright show-report",
     "typecheck": "tsc --noEmit",
     "install:browsers": "playwright install --with-deps"
