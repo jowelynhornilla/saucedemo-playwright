@@ -17,7 +17,7 @@ npm install
 # 2. Install the Playwright browsers (one-off)
 npm run install:browsers
 
-# 3. Run the whole suite (all three browsers)
+# 3. Run the whole suite (all six device profiles)
 npm test
 
 # 4. Open the HTML report
