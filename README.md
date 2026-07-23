@@ -29,10 +29,10 @@ npm run report
 | Command                  | What it does                                            |
 | ------------------------ | ------------------------------------------------------- |
 | `npm test`               | Runs every test on all 6 device profiles                 |
-| `npm run test:chromium`  | Chromium only — the fastest feedback loop                |
+| `npm run test:chromium`  | Chromium only - the fastest feedback loop                |
 | `npm run test:mobile`    | Mobile and tablet profiles only                          |
-| `npm run test:demo`      | Visible browser in slow motion — watch a run end to end  |
-| `npm run test:ui`        | Playwright UI mode — time-travel debugging, watch mode   |
+| `npm run test:demo`      | Visible browser in slow motion - watch a run end to end  |
+| `npm run test:ui`        | Playwright UI mode - time-travel debugging, watch mode   |
 | `npm run test:debug`     | Steps through tests with the Playwright Inspector        |
 | `npm run report`         | Opens the generated HTML report                          |
 | `npm run typecheck`      | Type-checks the project without running any tests        |
