@@ -1,5 +1,9 @@
 node_modules/
 test-results/
+
+# Ignored by default as a build artefact. The report from the latest run has
+# been force-added (`git add -f playwright-report/`) so it ships with this
+# submission, as the assessment asked for it.
 playwright-report/
 blob-report/
 playwright/.cache/
