@@ -58,11 +58,11 @@ BASE_URL=https://www.saucedemo.com npm test
 
 | Task                                                     | Test                                                                     |
 | -------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **1** – Log in, verify the Products page loads            | `tests/login.spec.ts` → *standard user can log in and the Products page loads* |
-| **2** – Add Backpack + Bike Light, badge shows 2          | `tests/cart.spec.ts` → *adding two products updates the cart badge to 2*  |
-| **3** – Cart shows both products, names, prices           | `tests/cart.spec.ts` → *cart page lists both products with correct names and prices* |
-| **4** – Remove an item, one remains, badge updates        | `tests/cart.spec.ts` → *removing a product leaves one item and updates the badge* |
-| **5** – Checkout, verify the Overview page loads          | `tests/checkout.spec.ts` → *customer details lead to the Checkout Overview page* |
+| **1** - Log in, verify the Products page loads            | `tests/login.spec.ts`- *standard user can log in and the Products page loads* |
+| **2** - Add Backpack + Bike Light, badge shows 2          | `tests/cart.spec.ts`- *adding two products updates the cart badge to 2*  |
+| **3** - Cart shows both products, names, prices           | `tests/cart.spec.ts`- *cart page lists both products with correct names and prices* |
+| **4** - Remove an item, one remains, badge updates        | `tests/cart.spec.ts`- *removing a product leaves one item and updates the badge* |
+| **5** - Checkout, verify the Overview page loads          | `tests/checkout.spec.ts`- *customer details lead to the Checkout Overview page* |
 
 Beyond the brief, the suite also covers the locked-out and invalid-credential
 login paths, emptying the cart completely, checkout form validation, the order
@@ -109,11 +109,11 @@ Two things make this more than a list of complaints:
 
 **Every defect has a test that asserts the correct behaviour**, marked `test.fail()`. The
 suite stays green while the bug exists, and the moment someone fixes it Playwright reports
-an unexpected pass — the signal to drop the annotation and let the test guard the fix as a
+an unexpected pass - the signal to drop the annotation and let the test guard the fix as a
 normal regression test. The bug list maintains itself.
 
 **Every defect is checked against a control account in the same run.** The
-*Control — standard_user is unaffected* test runs all six checks against a healthy account
+*Control - standard_user is unaffected* test runs all six checks against a healthy account
 and passes. That is what separates a real defect from a broken test, and it is automated
 rather than asserted.
 
@@ -176,99 +176,13 @@ saucedemo-playwright/
 
 ---
 
-## Explanation of the approach
-
-### Why it is organised this way
-
-**Four layers, each with one job.** Test data (`data/`), interaction with the UI
-(`pages/`), setup and wiring (`fixtures/`), and the assertions that express
-business intent (`tests/`). Each layer only knows about the one below it, so a
-change lands in exactly one place: a redesigned checkout form touches one page
-object, a price change touches one data file, and no spec changes at all.
-
-**Page objects hide *how*, specs state *what*.** There is not a single CSS
-selector in the `tests/` folder. A spec reads
-`await inventoryPage.addProductsToCart([backpack, bikeLight])` — which is the
-language of the requirement, not the language of the DOM. That also means the
-specs stay readable to a non-developer reviewing coverage.
-
-**A `BasePage` that stays small.** It holds only what genuinely is universal:
-the `Page` handle, the page's path, and `expectLoaded()`. That last method
-asserts *both* the URL and the rendered header, because a correct URL on a page
-that failed to render is a false pass. I deliberately kept the base class thin —
-an over-stuffed base class is the most common way a POM decays.
-
-**A component object for the header.** The cart badge and burger menu appear on
-every page behind the login, so they are modelled once as `HeaderComponent` and
-composed into each page (`cartPage.nav.expectCartItemCount(1)`) rather than
-inherited or copy-pasted five times.
-
-**Fixtures instead of `beforeEach` boilerplate.** Page objects are injected, so
-a test declares its dependencies in its signature and constructs nothing. The
-`loginAsStandardUser` fixture makes the "user is signed in" precondition a
-single word in the test signature — while leaving `login.spec.ts` free to drive
-login by hand, since that is the thing it is testing.
-
-**Deriving selectors from data.** SauceDemo's add/remove buttons are
-`data-test="add-to-cart-sauce-labs-backpack"`. `toProductId()` derives that slug
-from the product name, so covering a new product means adding three lines to
-`data/products.ts` — no new selectors, no new page-object methods. The site
-lowercases the name and swaps spaces for dashes but *keeps* punctuation, so the
-helper does the same; the `Test.allTheThings() T-Shirt (Red)` test exists to
-hold that behaviour in place, since it is the only product that proves it.
-
-**Selector strategy.** `data-test` attributes first (they exist precisely to be
-tested against and survive restyling), stable structural classes such as
-`.cart_item` second, and role/text-based locators where they are the clearest
-option. I avoided XPath and any positional or CSS-nesting-dependent selector.
-
-**Waiting.** No `waitForTimeout` anywhere. Every assertion is a web-first
-`expect` that retries on its own. The one place that needed care is the cart
-badge, which SauceDemo *removes from the DOM* when the cart is empty — asserting
-"the badge shows 0" is impossible directly, so `expectCartItemCount` wraps the
-read in `expect.poll()`, which retries and handles the missing-element case
-cleanly.
-
-**Test independence.** Every test logs in fresh, builds its own cart, and
-asserts its own outcome. Nothing is shared, nothing is ordered, so the suite runs
-fully parallel and a single failure never cascades.
-
-**Meaningful assertions.** Where it was cheap to check something real, I did:
-the checkout overview verifies that the item total equals the sum of the line
-prices and that the grand total equals subtotal + tax. A test that only checks
-"the page loaded" would sail straight past a pricing bug.
-
-### What I would add with more time
-
-1. **Authenticate via `storageState`.** Logging in through the UI in every test
-   costs a few seconds per test and re-tests login constantly. A setup project
-   that logs in once and saves the session state would cut suite time
-   significantly. I left it out here because SauceDemo keeps its cart in
-   session storage, so sharing state naively would leak cart contents between
-   tests — it needs doing properly, not quickly.
-2. **Visual regression testing** with `toHaveScreenshot()`, especially against
-   `visual_user`, which SauceDemo ships specifically to exhibit layout defects.
-3. **API-level setup.** On a real application I would seed the cart via API and
-   reserve the UI for asserting what the user actually sees — faster and far
-   less brittle.
-4. **Accessibility checks** via `@axe-core/playwright` on each key page.
-5. **Data-driven runs across the other personas** (`problem_user`,
-   `performance_glitch_user`) — a good way to prove the suite catches real
-   defects rather than just passing.
-6. **ESLint + Prettier + a pre-commit hook**, and sharded CI runs with merged
-   blob reports once the suite outgrows a single machine.
-7. **Fuller negative and boundary coverage** on the checkout form: missing last
-   name and postal code, over-long input, special characters.
-
----
-
 ## Reports and failure artefacts
 
 After a run:
 
-- **HTML report** → `playwright-report/index.html` (`npm run report`)
-- **Screenshots, videos and traces for failures** → `test-results/`
-- **JUnit XML for CI** → `test-results/junit.xml`
+- **HTML report** - `playwright-report/index.html` (`npm run report`)
+- **Screenshots, videos and traces for failures** - `test-results/`
+- **JUnit XML for CI** - `test-results/junit.xml`
 
 A trace can be replayed step by step with:
 
