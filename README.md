@@ -1,4 +1,4 @@
-# SauceDemo — Playwright E2E Test Suite
+# SauceDemo - Playwright E2E Test Suite
 
 End-to-end tests for [saucedemo.com](https://www.saucedemo.com/), written with **Playwright** and **TypeScript** using the Page Object Model.
 
